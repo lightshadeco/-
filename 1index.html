@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>光影織藝報價系統</title>
+    <style>
+        :root { --primary: #007AFF; --bg: #F2F2F7; --card: #FFFFFF; --text: #000000; --secondary-text: #8E8E93; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--text); -webkit-tap-highlight-color: transparent; }
+        .container { max-width: 600px; margin: 0 auto; padding-bottom: 40px; }
+        h1 { text-align: center; font-size: 20px; margin-bottom: 20px; color: #333; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .input-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; color: var(--secondary-text); margin-bottom: 6px; }
+        input[type="number"], select { width: 100%; padding: 12px; font-size: 17px; border: 1px solid #E5E5EA; border-radius: 10px; background: #F2F2F7; box-sizing: border-box; outline: none; }
+        input:focus, select:focus { border-color: var(--primary); background: #fff; }
+        .segmented-control { display: flex; background: #E5E5EA; border-radius: 9px; padding: 2px; margin-bottom: 20px; }
+        .segmented-control label { flex: 1; text-align: center; padding: 8px 0; margin: 0; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 7px; color: #000; }
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + label { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #F2F2F7; }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label { font-size: 16px; font-weight: 500; }
+        .toggle-sub { font-size: 12px; color: var(--secondary-text); }
+        .switch { position: relative; display: inline-block; width: 50px; height: 30px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E5E5EA; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .result-card { background: #1C1C1E; color: white; border-radius: 20px; padding: 24px; }
+        .total-price { font-size: 36px; font-weight: 800; color: #0A84FF; margin: 10px 0 20px 0; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .result-item h4 { margin: 0; font-size: 12px; color: #8E8E93; font-weight: normal; }
+        .result-item div { font-size: 18px; font-weight: 600; margin-top: 4px; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .detail-row span:first-child { color: #AEAEB2; }
+        .detail-row span:last-child { font-weight: 500; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>光影織藝 - 窗簾用布計算器</h1>
+    <div class="segmented-control">
+        <input type="radio" name="type" id="type-triple" value="triple" checked onclick="calculate()">
+        <label for="type-triple">三折簾</label>
+        <input type="radio" name="type" id="type-sfold" value="sfold" onclick="calculate()">
+        <label for="type-sfold">蛇行簾</label>
+        <input type="radio" name="type" id="type-square" value="square" onclick="calculate()">
+        <label for="type-square">才數類</label>
+    </div>
+    <div class="card">
+        <div class="input-group" style="display: flex; gap: 10px;">
+            <div style="flex: 1;"><label>寬度 (cm)</label><input type="number" id="width" value="180" oninput="calculate()"></div>
+            <div style="flex: 1;"><label>高度 (cm)</label><input type="number" id="height" value="256" oninput="calculate()"></div>
+        </div>
+        <div class="input-group" style="display: flex; gap: 10px;">
+            <div style="flex: 1;"><label>單價</label><input type="number" id="price" value="240" oninput="calculate()"></div>
+            <div style="flex: 1;" id="multiplier-group"><label>倍數</label><input type="number" id="multiplier" value="2.2" step="0.1" oninput="calculate()"></div>
+        </div>
+        <div id="triple-options" class="input-group">
+            <label>計價模式</label>
+            <select id="triple-mode" onchange="calculate()"><option value="seamless">無接縫</option><option value="five-foot">五尺布</option></select>
+        </div>
+        <div id="sfold-options" class="hidden">
+            <div class="input-group"><label>鉤距</label><select id="hook-dist" onchange="calculate()"><option value="8">8 公分</option><option value="5.5">5.5 公分</option></select></div>
+            <div class="input-group"><label>開啟方式</label><select id="open-mode" onchange="calculate()"><option value="double">雙開</option><option value="single">單開</option></select></div>
+        </div>
+    </div>
+    <div class="card" id="addons-card">
+        <div class="toggle-row"><div><div class="toggle-label">塑形整燙</div><div class="toggle-sub">提升垂直美感</div></div><label class="switch"><input type="checkbox" id="hasShaping" onchange="calculate()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><div><div class="toggle-label">白鐵勾</div><div class="toggle-sub">耐用不生鏽</div></div><label class="switch"><input type="checkbox" id="hasHooks" onchange="calculate()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><div><div class="toggle-label">船型綁帶</div><div class="toggle-sub">標配組</div></div><label class="switch"><input type="checkbox" id="hasTieBack" onchange="calculate()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><div><div class="toggle-label">下襬鉛條</div><div class="toggle-sub">增加垂墜感</div></div><label class="switch"><input type="checkbox" id="hasLead" onchange="calculate()"><span class="slider"></span></label></div>
+    </div>
+    <div class="result-card">
+        <div style="font-size: 14px; color: #8E8E93;">預估總金額</div><div class="total-price" id="total-price">NT$ 0</div>
+        <div class="result-grid" id="main-metrics"><div class="result-item"><h4>布料寬度</h4><div id="fabric-width">0 尺</div></div><div class="result-item"><h4>使用幅數</h4><div id="fabric-fu">0 幅</div></div></div>
+        <div style="font-weight: bold; margin-bottom: 12px; font-size: 14px; color: #8E8E93;">費用明細</div><div id="details-list"></div>
+    </div>
+</div>
+<script>
+    function excelRound(v, d) { return Number(Math.round(v + 'e' + d) + 'e-' + d); }
+    function excelRoundUp(v, d) { return Number(Math.ceil(v + 'e' + d) + 'e-' + d); }
+    function calculate() {
+        const w = parseFloat(document.getElementById('width').value)||0, h = parseFloat(document.getElementById('height').value)||0;
+        const p = parseFloat(document.getElementById('price').value)||0, m = parseFloat(document.getElementById('multiplier').value)||0;
+        const hasShaping=document.getElementById('hasShaping').checked, hasHooks=document.getElementById('hasHooks').checked;
+        const hasTieBack=document.getElementById('hasTieBack').checked, hasLead=document.getElementById('hasLead').checked;
+        const type = document.querySelector('input[name="type"]:checked').value;
+        
+        document.getElementById('triple-options').classList.toggle('hidden', type !== 'triple');
+        document.getElementById('sfold-options').classList.toggle('hidden', type !== 'sfold');
+        document.getElementById('addons-card').classList.toggle('hidden', type === 'square');
+        document.getElementById('multiplier-group').style.visibility = type === 'square' ? 'hidden' : 'visible';
+        document.getElementById('main-metrics').classList.toggle('hidden', type === 'square');
+
+        let details = [], fWChi = 0, fWFu = 0;
+        if (type === 'triple') {
+            const isSeamless = document.getElementById('triple-mode').value === 'seamless';
+            const wChi = excelRound(w/30, 1), hChi = excelRound(h/30, 1);
+            fWChi = excelRound(wChi * m, 1); fWFu = excelRoundUp(w/150 * m, 0);
+            let fP = 0, lP = 0, hP = hasHooks?fWChi*10:0, ldP = hasLead?fWChi*40:0;
+            if (isSeamless) { fP=fWChi*p; lP=fWChi*70; } else { fP=fWFu*hChi*p; lP=fWFu*130; hP=hasHooks?fWFu*20:0; }
+            details.push({l:"布料價格",v:fP},{l:"製作工資",v:lP},{l:"M16軌道",v:excelRoundUp(wChi*66,0)});
+            if(hasShaping) details.push({l:"高溫塑形",v:(fWFu<6.25?900:fWFu*160)});
+            if(hasHooks) details.push({l:"白鐵勾",v:hP}); if(hasTieBack) details.push({l:"船型綁帶",v:120}); if(hasLead) details.push({l:"下襬鉛條",v:ldP});
+        } else if (type === 'sfold') {
+            const hDist = parseFloat(document.getElementById('hook-dist').value), isDouble = document.getElementById('open-mode').value === 'double';
+            const wChi = excelRound(w/30, 1);
+            let raw = isDouble ? excelRound((w/2)*m/hDist,0)*2 : excelRound(w*m/hDist,0);
+            if(isDouble && (raw/2)%2!==0) raw+=2; else if(!isDouble && raw%2!==0) raw+=1; 
+            const fWCm = (raw-1)*hDist; fWChi = excelRound(fWCm/30, 1); fWFu = excelRoundUp(fWCm/150, 0);
+            details.push({l:"布料價格",v:fWChi*p},{l:"製作工資",v:fWChi*90},{l:"蛇行軌道",v:excelRoundUp(wChi*100,0)});
+            if(hasShaping) details.push({l:"高溫塑形",v:(fWFu<6.25?900:fWFu*160)});
+            if(hasHooks) details.push({l:"白鐵勾",v:hasHooks?fWChi*10:0}); if(hasTieBack) details.push({l:"船型綁帶",v:120}); if(hasLead) details.push({l:"下襬鉛條",v:hasLead?fWChi*40:0});
+        } else {
+            const sq = excelRoundUp((w*h)/900, 0), tot = excelRoundUp(p*sq, 0);
+            details.push({l:`基本才數 (${sq}才)`,v:tot});
+        }
+        
+        const total = details.reduce((a,b)=>a+b.v,0);
+        document.getElementById('total-price').innerText = "NT$ " + Math.round(total).toLocaleString();
+        document.getElementById('fabric-width').innerText = fWChi.toFixed(1) + " 尺";
+        document.getElementById('fabric-fu').innerText = fWFu + " 幅";
+        document.getElementById('details-list').innerHTML = details.map(d=>`<div class="detail-row"><span>${d.l}</span><span>$${Math.round(d.v)}</span></div>`).join('');
+    }
+    calculate();
+</script>
+</body>
+</html>
